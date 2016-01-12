@@ -162,13 +162,9 @@ class HMM(object):
             path[state] = [state]
         # Forward Recursion
         for t, x in list(enumerate(obs))[1:]:
-            if verbose: print '{}/{}'.format(t, len(obs))
+            if verbose and t%10==0: print '{}/{}'.format(t, len(obs))
             old_path = deepcopy(path)
             for state in self.states():
-                # this is very general (slow)
-                #prestate_scores = [self.logtrans(prestate, state) + alpha[t-1][prestate]
-                #    for prestate in self.states()]
-                # this is much faster (linear chain)
                 prestate_scores = [self.logtrans(prestate, state) + alpha[t-1][prestate]
                     for prestate in (state-1, state)]
 
