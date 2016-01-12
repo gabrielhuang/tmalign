@@ -133,7 +133,7 @@ class HMM(object):
         else:  # cannot skip state
             return np.log(0.)
         
-    def decode(self, obs, mode='offline-viterbi'):
+    def decode(self, obs, mode='offline-viterbi', verbose=False):
         '''
         Viterbi Algorithm or "Online Viterbi"
         
@@ -158,21 +158,22 @@ class HMM(object):
         self.alpha = alpha # debug
         self.path = path # debug
         for state in self.states():
-            alpha[0, state] = self.logobs[state][obs[0]] + np.log(1. if state==0 else 0.)
+            alpha[0, state] = self.logobs[state][0] + np.log(1. if state==0 else 0.)
             path[state] = [state]
         # Forward Recursion
         for t, x in list(enumerate(obs))[1:]:
+            if verbose: print '{}/{}'.format(t, len(obs))
             old_path = deepcopy(path)
             for state in self.states():
                 prestate_scores = [self.logtrans(prestate, state) + alpha[t-1][prestate]
                     for prestate in self.states()]
 
                 if mode == 'online-forward':
-                    alpha[t, state] = self.logobs[state][x] + log_sum_exp(prestate_scores)
+                    alpha[t, state] = self.logobs[state][t] + log_sum_exp(prestate_scores)
                     
                 else: # mode in('offline-viterbi', 'online-viterbi'):
                     best_prestate = np.argmax(prestate_scores)
-                    alpha[t, state] = (self.logobs[state][x]) + alpha[t-1, best_prestate]
+                    alpha[t, state] = (self.logobs[state][t]) + alpha[t-1, best_prestate]
                     path[state] = old_path[best_prestate] + [state]
         
         # Return best path
