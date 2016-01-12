@@ -18,7 +18,7 @@ class ObservationModel(Distribution):
     pass
     
     
-class DurationModel(ObservationModel):
+class DurationModel(Distribution):
     def get_log_survival(self, x):
         pass
     
