@@ -97,16 +97,15 @@ class HMM(object):
     '''
     Linear-Chain hidden Markov Model
     '''
-    def __init__(self, events, obs_model, beat_frames):
+    def __init__(self, durations, obs_model, frames_per_beat):
         '''
         if bpm is None, use NO tempo model, e.g., 
         
         '''
-        self.events = events
         self.logobs = self.obs_model = obs_model
-        self.beat_frames = beat_frames  # beat to frames
+        self.frames_per_beat = frames_per_beat  # beat to frames
         # geometric distribution
-        self.exits = [self.get_exit(duration) for __, duration in events]
+        self.exits = map(self.get_exit, durations)
         
     def nstates(self):
         return len(self.obs_model)
@@ -124,7 +123,7 @@ class HMM(object):
         We want E[d(u)] = (1-p)/p = duration,
         which corresponds to p = 1 / (d+1)
         '''
-        return 1. / (duration_beats * self.beat_frames + 1)
+        return 1. / (duration_beats * self.frames_per_beat + 1)
         
     def logtrans(self, prestate, state):
         if prestate == state:
@@ -190,12 +189,11 @@ class HSMM(HMM):
     '''
     Hidden Semi-Markov Model
     '''
-    def __init__(self, events, obs_model, dur_model):
+    def __init__(self, obs_model, dur_model):
         '''
         if bpm is None, use NO tempo model, e.g., 
         
         '''
-        self.events = events
         self.obs_model = obs_model
         self.dur_model = dur_model
 
