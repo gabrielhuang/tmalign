@@ -166,15 +166,16 @@ class HMM(object):
             old_path = deepcopy(path)
             for state in self.states():
                 prestate_scores = [self.logtrans(prestate, state) + alpha[t-1][prestate]
-                    for prestate in (state-1, state)]
+                    for prestate in self.states() if prestate==state or prestate==state-1]
 
                 if mode == 'online-forward':
                     alpha[t, state] = self.logobs[state][x] + log_sum_exp(prestate_scores)
                     
                 else: # mode in('offline-viterbi', 'online-viterbi'):
                     best_prestate = np.argmax(prestate_scores)
+                    actual_prestate = state+1-len(prestate_scores)+best_prestate  # correct index
                     alpha[t, state] = (self.logobs[state][x]) + prestate_scores[best_prestate]
-                    path[state] = old_path[best_prestate] + [state]
+                    path[state] = old_path[actual_prestate] + [state]
         
         # Return best path
         if mode == 'offline-viterbi':
