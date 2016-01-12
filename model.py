@@ -158,7 +158,7 @@ class HMM(object):
         self.alpha = alpha # debug
         self.path = path # debug
         for state in self.states():
-            alpha[0, state] = self.logobs[state][0] + np.log(1. if state==0 else 0.)
+            alpha[0, state] = self.logobs[state][obs[0]] + np.log(1. if state==0 else 0.)
             path[state] = [state]
         # Forward Recursion
         for t, x in list(enumerate(obs))[1:]:
@@ -173,11 +173,11 @@ class HMM(object):
                     for prestate in (state-1, state)]
 
                 if mode == 'online-forward':
-                    alpha[t, state] = self.logobs[state][t] + log_sum_exp(prestate_scores)
+                    alpha[t, state] = self.logobs[state][x] + log_sum_exp(prestate_scores)
                     
                 else: # mode in('offline-viterbi', 'online-viterbi'):
                     best_prestate = np.argmax(prestate_scores)
-                    alpha[t, state] = (self.logobs[state][t]) + prestate_scores[best_prestate]
+                    alpha[t, state] = (self.logobs[state][x]) + prestate_scores[best_prestate]
                     path[state] = old_path[best_prestate] + [state]
         
         # Return best path
