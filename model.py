@@ -165,15 +165,19 @@ class HMM(object):
             if verbose: print '{}/{}'.format(t, len(obs))
             old_path = deepcopy(path)
             for state in self.states():
+                # this is very general (slow)
+                #prestate_scores = [self.logtrans(prestate, state) + alpha[t-1][prestate]
+                #    for prestate in self.states()]
+                # this is much faster (linear chain)
                 prestate_scores = [self.logtrans(prestate, state) + alpha[t-1][prestate]
-                    for prestate in self.states()]
+                    for prestate in (state-1, state)]
 
                 if mode == 'online-forward':
                     alpha[t, state] = self.logobs[state][t] + log_sum_exp(prestate_scores)
                     
                 else: # mode in('offline-viterbi', 'online-viterbi'):
                     best_prestate = np.argmax(prestate_scores)
-                    alpha[t, state] = (self.logobs[state][t]) + alpha[t-1, best_prestate]
+                    alpha[t, state] = (self.logobs[state][t]) + prestate_scores[best_prestate]
                     path[state] = old_path[best_prestate] + [state]
         
         # Return best path
